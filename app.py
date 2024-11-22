@@ -43,13 +43,20 @@ def preprocess_text(text):
     return text.strip()
 
 def summarize_text(text):
+    """
+    Use OpenAI GPT to summarize the given text.
+    """
     try:
         response = openai.ChatCompletion.create(
-            engine="gpt-3.5-turbo",  
-            prompt=f"Summarize and analyze: {text}",
+            model="gpt-3.5-turbo",  # Use 'gpt-3.5-turbo' or 'gpt-4' as per your account access
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": f"Summarize and analyze: {text}"}
+            ],
             max_tokens=MAX_TOKENS
         )
-        summary = response.get('choices', [{}])[0].get('text', '').strip()
+        # Extract the generated content from the response
+        summary = response['choices'][0]['message']['content'].strip()
         if not summary:
             raise ValueError("Empty summary returned by GPT.")
         return summary

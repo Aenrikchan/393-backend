@@ -1,0 +1,9 @@
+Flask==2.3.2
+openai==0.27.2
+PyYAML==6.0.1
+requests==2.31.0
+gunicorn==21.2.0
+setuptools>=65.0
+wheel>=0.40.0
+build
+Flask-Cors==3.0.10

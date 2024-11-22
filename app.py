@@ -44,7 +44,7 @@ def preprocess_text(text):
 
 def summarize_text(text):
     try:
-        response = openai.Completion.create(
+        response = openai.ChatCompletion.create(
             engine="gpt-3.5-turbo",  
             prompt=f"Summarize and analyze: {text}",
             max_tokens=MAX_TOKENS

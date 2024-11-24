@@ -7,7 +7,8 @@ from flask_cors import CORS
 import os
 
 app = Flask(__name__)
-CORS(app)
+
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Load configuration from file
 def load_config(config_path="config.yaml"):
@@ -96,20 +97,41 @@ def search_alternative_sources(query, retry_count=0):
 
 @app.route('/analyze', methods=['POST'])
 def analyze_content():
+    """
+    Endpoint to analyze content, summarize it, and retrieve alternative sources.
+    """
     try:
-        data = request.json
+        # Parse input data
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Invalid or missing JSON body'}), 400
+
         text = preprocess_text(data.get('content', ''))
         metadata = data.get('metadata', {})
-        
+
+        # Validate input text
         if not text:
             return jsonify({'error': 'No content provided'}), 400
 
-        summary = summarize_text(text)
-        alternative_sources = search_alternative_sources(summary)
+        # Summarize the text
+        try:
+            summary = summarize_text(text)
+        except Exception as e:
+            logging.error(f"Error summarizing text: {e}")
+            return jsonify({'error': 'Failed to summarize content'}), 500
 
-        if alternative_sources is None:
+        # Search for alternative sources
+        try:
+            alternative_sources = search_alternative_sources(summary) or []
+        except Exception as e:
+            logging.error(f"Error fetching alternative sources: {e}")
             alternative_sources = []
-        
+
+        # Ensure metadata is valid
+        if not isinstance(metadata, dict):
+            metadata = {}
+
+        # Return the response
         return jsonify({
             'summary': summary,
             'metadata': metadata,
@@ -117,5 +139,5 @@ def analyze_content():
         })
 
     except Exception as e:
-        logging.error(f"Error in /analyze endpoint: {e}")
-        return jsonify({'error': str(e)}), 500
+        logging.error(f"Unhandled error in /analyze endpoint: {e}")
+        return jsonify({'error': 'An unexpected error occurred'}), 500

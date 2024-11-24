@@ -107,6 +107,9 @@ def analyze_content():
         summary = summarize_text(text)
         alternative_sources = search_alternative_sources(summary)
 
+        if alternative_sources is None:
+            alternative_sources = []
+        
         return jsonify({
             'summary': summary,
             'metadata': metadata,
